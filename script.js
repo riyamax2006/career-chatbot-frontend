@@ -14,7 +14,7 @@
 // - ngrok tunnel: 'https://your-tunnel-id.ngrok.io'
 // - Hosted backend: 'https://your-backend.railway.app'
 //
-const API_URL = 'http://localhost:5001';
+const API_URL = 'https://career-chatbot-backend-v2.onrender.com';
 
 // API endpoint (constructed from base URL)
 const RECOMMEND_ENDPOINT = `${API_URL}/recommend`;
