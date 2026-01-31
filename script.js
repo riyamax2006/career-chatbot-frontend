@@ -28,13 +28,14 @@ const chatMessages = document.getElementById('chat-messages');
 const inputArea = document.getElementById('input-area');
 
 // Chat state machine
-let currentState = 'INIT'; // INIT, SALARY, HORIZON, RISK, LOADING, DONE
+let currentState = 'INIT'; // INIT, SALARY, HORIZON, RISK, SKILLS, LOADING, DONE
 
 // User's collected answers
 const userAnswers = {
     salary_range: null,
     time_horizon: null,
-    risk_appetite: null
+    risk_appetite: null,
+    skills: null
 };
 
 // Question definitions
@@ -160,15 +161,95 @@ function handleOptionClick(value, label) {
         setTimeout(() => askNextQuestion('RISK'), 400);
     } else if (currentState === 'RISK') {
         userAnswers.risk_appetite = value;
-        console.log('[DEBUG] Stored risk_appetite:', value, '-> CALLING submitData()');
-        console.log('[DEBUG] Final userAnswers:', JSON.stringify(userAnswers));
-        setTimeout(() => {
-            console.log('[DEBUG] setTimeout fired - now calling submitData()');
-            submitData();
-        }, 400);
+        console.log('[DEBUG] Stored risk_appetite:', value, '-> Moving to SKILLS');
+        setTimeout(() => askForSkills(), 400);
     } else {
         console.error('[DEBUG] ERROR: Unknown state:', currentState);
     }
+}
+
+/**
+ * Ask for skills/interests with free-text input
+ */
+function askForSkills() {
+    console.log('[DEBUG] askForSkills() called');
+    currentState = 'SKILLS';
+
+    // Add bot message asking for skills
+    addBotMessage(`
+        <p><strong>What are your skills and interests?</strong></p>
+        <p class="subtext">Describe your abilities, experience, or what you enjoy doing:</p>
+    `);
+
+    // Render text input after a short delay
+    setTimeout(() => {
+        console.log('[DEBUG] Rendering skills input field');
+        renderSkillsInput();
+    }, 300);
+}
+
+/**
+ * Render text input for skills
+ */
+function renderSkillsInput() {
+    inputArea.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'text-input-container';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'skills-input';
+    input.className = 'skills-input';
+    input.placeholder = 'e.g., Python, data analysis, problem solving, communication...';
+    input.maxLength = 500;
+
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'submit-btn';
+    submitBtn.innerHTML = '<span>→</span>';
+    submitBtn.onclick = handleSkillsSubmit;
+
+    // Allow Enter key to submit
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleSkillsSubmit();
+        }
+    });
+
+    container.appendChild(input);
+    container.appendChild(submitBtn);
+    inputArea.appendChild(container);
+
+    // Focus the input
+    input.focus();
+}
+
+/**
+ * Handle skills submission
+ */
+function handleSkillsSubmit() {
+    const input = document.getElementById('skills-input');
+    const skillsText = input ? input.value.trim() : '';
+
+    console.log('[DEBUG] handleSkillsSubmit() called with skills:', skillsText);
+
+    if (!skillsText) {
+        // Shake the input if empty
+        input.classList.add('shake');
+        setTimeout(() => input.classList.remove('shake'), 500);
+        return;
+    }
+
+    // Show user's input
+    addUserMessage(skillsText);
+
+    // Store skills and submit
+    userAnswers.skills = skillsText;
+    console.log('[DEBUG] Final userAnswers:', JSON.stringify(userAnswers));
+
+    // Clear input area and submit
+    inputArea.innerHTML = '';
+    submitData();
 }
 
 // ============================================
